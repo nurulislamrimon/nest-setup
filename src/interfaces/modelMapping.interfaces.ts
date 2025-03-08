@@ -1,4 +1,4 @@
-import { Administrator } from 'src/modules/administrators/entities/administrator.entity';
+import { Administrator } from '@prisma/client';
 
 export interface IModelMappingsForWhere {
   Administrator: Administrator;

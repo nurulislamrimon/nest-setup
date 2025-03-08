@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// while creating a new model make sure added the model to the IModelMapping else filter and search will not work
+model Administrator {
+  id               Int        @id @default(autoincrement())
+  full_name        String
+  phone_number     String
+  email            String     @unique
+  role             role_types @default(user)
+  password         String
+  address          String?
+  // dates
+  login_ip         String?
+  failed_attemp_ip String?
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  deleted_at       DateTime?
+
+  @@index([email])
+}
+
+// role enum
+enum role_types {
+  user
+  manager
+  admin
+  super_admin
+}
+
+// help model
+model Help_request {
+  id                  Int                       @id @default(autoincrement())
+  status              help_request_status_types @default(new)
+  type                help_request_types        @default(general)
+  platform_name       String?
+  client_name         String?
+  service_required    String?
+  phone_number        String?
+  email               String?
+  budget_min          Int?
+  budget_max          Int?
+  project_description String?
+  referral_code       String?
+  // dates
+  created_at          DateTime                  @default(now())
+  updated_at          DateTime                  @updatedAt
+  deleted_at          DateTime?
+}
+
+enum help_request_types {
+  general
+  quick
+}
+
+enum help_request_status_types {
+  new
+  open
+  cancelled
+  reopened
+  waiting_feedback
+  on_hold
+  successful_conversion
+}
+
+// help model
+model Mail_template {
+  id            Int       @id @default(autoincrement())
+  template_name String
+  template_type String
+  template_path String
+  is_active     Boolean   @default(true)
+  // dates
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+}
+
+// mail config
+model Mail_config {
+  id            Int       @id @default(autoincrement())
+  platform_name String
+  port          Int       @default(465)
+  host          String
+  pass          String
+  user          String
+  // dates
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+  mailing       Mailing[]
+}
+
+// mailing model
+model Mailing {
+  id                   Int          @id @default(autoincrement())
+  receiver_mail        String?
+  receiver_mails       Json?
+  receiver_mails_count Int?
+  sender               String
+  subject              String
+  template_path        String
+  mail_config_id       Int?
+  mail_config          Mail_config? @relation(fields: [mail_config_id], references: [id])
+  // dates
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+  deleted_at           DateTime?
+
+  @@index([receiver_mail])
+}
+
+model Parcel_statistics {
+  id          Int    @id @default(autoincrement())
+  phone       String @unique
+  courierData Json
+  reports     Json
+
+  // Dates
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([phone])
+}

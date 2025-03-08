@@ -13,19 +13,17 @@ import { AdministratorsService } from './administrators.service';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 import { ApiResponse } from 'src/interceptors/response.interceptor';
-import { Administrator } from './entities/administrator.entity';
-import { DeleteResult, UpdateResult } from 'typeorm';
 import { LoginAdministratorDto } from './dto/login-administrator.dto';
 import { Public } from 'src/decorators/public.decorator';
+import { Administrator } from '@prisma/client';
 
 @Controller('administrators')
 export class AdministratorsController {
   constructor(private readonly administratorsService: AdministratorsService) {}
 
   @Post('add')
-  async create(
-    @Body() createAdministratorDto: CreateAdministratorDto,
-  ): Promise<ApiResponse<Administrator>> {
+  @Public()
+  async create(@Body() createAdministratorDto: CreateAdministratorDto) {
     const data = await this.administratorsService.create(
       createAdministratorDto,
     );
@@ -74,7 +72,7 @@ export class AdministratorsController {
 
   @Get()
   @Public()
-  async findAll(): Promise<ApiResponse<Administrator[]>> {
+  async findAll() {
     const data = await this.administratorsService.findAll({});
     return {
       message: 'Administrator retrived successfully',
@@ -84,9 +82,7 @@ export class AdministratorsController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-  ): Promise<ApiResponse<Administrator | null>> {
+  async findOne(@Param('id') id: string) {
     const data = await this.administratorsService.findOne({
       where: { id: +id },
     });
@@ -97,7 +93,7 @@ export class AdministratorsController {
   async update(
     @Param('id') id: string,
     @Body() updateAdministratorDto: UpdateAdministratorDto,
-  ): Promise<ApiResponse<UpdateResult>> {
+  ) {
     const data = await this.administratorsService.update(
       +id,
       updateAdministratorDto,
@@ -106,7 +102,7 @@ export class AdministratorsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<ApiResponse<DeleteResult>> {
+  async remove(@Param('id') id: string) {
     const isExist = await this.administratorsService.findOne({
       where: { id: +id },
     });

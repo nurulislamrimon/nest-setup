@@ -1,28 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
-import { Administrator } from './entities/administrator.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as jwt from 'jsonwebtoken';
 
 import { PasswordDto } from './dto/login-administrator.dto';
 import * as bcrypt from 'bcrypt';
 import { envConfig } from 'src/config/env.config';
+import { Administrator, Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AdministratorsService {
   constructor(
-    @InjectRepository(Administrator)
-    private readonly administratorsRepository: Repository<Administrator>,
+    private readonly prisma: PrismaService,
+    // private readonly administratorsRepository: Prisma.AdministratorDelegate,
   ) {}
 
   create(createAdministratorDto: CreateAdministratorDto) {
-    createAdministratorDto.failed_attemp_ip = [];
-    const administrator = this.administratorsRepository.create(
-      createAdministratorDto,
-    );
-    return this.administratorsRepository.save(administrator);
+    return this.prisma.administrator.create({
+      data: createAdministratorDto,
+    });
   }
 
   async isPasswordMatched(passwordDto: PasswordDto) {
@@ -43,24 +40,29 @@ export class AdministratorsService {
     return token;
   }
 
-  async findAll(query: FindManyOptions<Administrator>) {
-    const administrators = await this.administratorsRepository.find(query);
-    const total = await this.administratorsRepository.count({});
+  async findAll(query: Prisma.AdministratorWhereInput) {
+    const administrators = await this.prisma.administrator.findMany({
+      where: query,
+    });
+    const total = await this.prisma.administrator.count({});
     return {
       total,
       administrators,
     };
   }
 
-  findOne(query: FindOneOptions<Administrator>) {
-    return this.administratorsRepository.findOne(query);
+  findOne(query: Prisma.AdministratorFindFirstOrThrowArgs) {
+    return this.prisma.administrator.findFirst(query);
   }
 
   update(id: number, updateAdministratorDto: UpdateAdministratorDto) {
-    return this.administratorsRepository.update(id, updateAdministratorDto);
+    return this.prisma.administrator.update({
+      where: { id },
+      data: updateAdministratorDto,
+    });
   }
 
   remove(id: number) {
-    return this.administratorsRepository.delete(id);
+    return this.prisma.administrator.delete({ where: { id } });
   }
 }
