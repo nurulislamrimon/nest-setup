@@ -34,6 +34,7 @@ export class AdministratorsController {
   }
 
   @Post('login')
+  @Public()
   async login(
     @Body() loginAdministratorDto: LoginAdministratorDto,
   ): Promise<ApiResponse<{ user: Administrator; accessToken: string }>> {

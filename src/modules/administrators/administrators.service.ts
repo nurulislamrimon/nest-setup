@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { envConfig } from 'src/config/env.config';
 import { Administrator, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { saltRounds } from 'src/constants';
 
 @Injectable()
 export class AdministratorsService {
@@ -16,7 +17,11 @@ export class AdministratorsService {
     // private readonly administratorsRepository: Prisma.AdministratorDelegate,
   ) {}
 
-  create(createAdministratorDto: CreateAdministratorDto) {
+  async create(createAdministratorDto: CreateAdministratorDto) {
+    createAdministratorDto.password = await bcrypt.hash(
+      createAdministratorDto.password,
+      saltRounds,
+    );
     return this.prisma.administrator.create({
       data: createAdministratorDto,
     });
