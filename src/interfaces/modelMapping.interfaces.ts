@@ -1,5 +1,5 @@
-import { Administrator } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export interface IModelMappingsForWhere {
-  Administrator: Administrator;
+  Administrator: Prisma.AdministratorWhereInput;
 }

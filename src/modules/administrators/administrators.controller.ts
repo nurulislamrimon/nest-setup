@@ -8,6 +8,7 @@ import {
   Delete,
   NotFoundException,
   BadRequestException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AdministratorsService } from './administrators.service';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
@@ -16,13 +17,13 @@ import { ApiResponse } from 'src/interceptors/response.interceptor';
 import { LoginAdministratorDto } from './dto/login-administrator.dto';
 import { Public } from 'src/decorators/public.decorator';
 import { Administrator } from '@prisma/client';
+import { SearchFilterAndPaginationInterceptor } from 'src/interceptors/searchFilterAndPagination.interceptor';
 
 @Controller('administrators')
 export class AdministratorsController {
   constructor(private readonly administratorsService: AdministratorsService) {}
 
   @Post('add')
-  @Public()
   async create(@Body() createAdministratorDto: CreateAdministratorDto) {
     const data = await this.administratorsService.create(
       createAdministratorDto,
@@ -73,8 +74,12 @@ export class AdministratorsController {
 
   @Get()
   @Public()
+  @UseInterceptors(
+    new SearchFilterAndPaginationInterceptor(['full_name'], ['full_name']),
+  )
   async findAll() {
     const data = await this.administratorsService.findAll({});
+
     return {
       message: 'Administrator retrived successfully',
       meta: { total: data.total, limit: 10, page: 1 },
