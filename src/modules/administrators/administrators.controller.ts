@@ -107,6 +107,7 @@ export class AdministratorsController {
       data: data.administrators,
     };
   }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const data = await this.administratorsService.findOne({
@@ -135,6 +136,7 @@ export class AdministratorsController {
     const { password, ...rest } = result;
     return { data: rest };
   }
+
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const isExist = await this.administratorsService.findOne({
@@ -142,6 +144,8 @@ export class AdministratorsController {
     });
     if (!isExist) throw new NotFoundException('Administrator not found');
     const data = await this.administratorsService.remove(+id);
-    return { data };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = data;
+    return { data: rest };
   }
 }
