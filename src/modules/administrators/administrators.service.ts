@@ -9,13 +9,11 @@ import { envConfig } from 'src/config/env.config';
 import { Administrator, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { saltRounds } from 'src/constants';
+import { DefaultArgs } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class AdministratorsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    // private readonly administratorsRepository: Prisma.AdministratorDelegate,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createAdministratorDto: CreateAdministratorDto) {
     createAdministratorDto.password = await bcrypt.hash(
@@ -45,10 +43,8 @@ export class AdministratorsService {
     return token;
   }
 
-  async findAll(query: Prisma.AdministratorWhereInput) {
-    const administrators = await this.prisma.administrator.findMany({
-      where: query,
-    });
+  async findAll(query: Prisma.AdministratorFindManyArgs<DefaultArgs>) {
+    const administrators = await this.prisma.administrator.findMany(query);
     const total = await this.prisma.administrator.count({});
     return {
       total,

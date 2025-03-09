@@ -9,6 +9,7 @@ import {
   NotFoundException,
   BadRequestException,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { AdministratorsService } from './administrators.service';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
@@ -18,6 +19,8 @@ import { LoginAdministratorDto } from './dto/login-administrator.dto';
 import { Public } from 'src/decorators/public.decorator';
 import { Administrator } from '@prisma/client';
 import { SearchFilterAndPaginationInterceptor } from 'src/interceptors/searchFilterAndPagination.interceptor';
+import { Request } from 'express';
+import { formatPagination } from 'src/utils/format.utils';
 
 @Controller('administrators')
 export class AdministratorsController {
@@ -75,10 +78,19 @@ export class AdministratorsController {
   @Get()
   @Public()
   @UseInterceptors(
-    new SearchFilterAndPaginationInterceptor(['full_name'], ['full_name']),
+    new SearchFilterAndPaginationInterceptor(
+      ['full_name', 'email'],
+      ['full_name', 'email'],
+    ),
   )
-  async findAll() {
-    const data = await this.administratorsService.findAll({});
+  async findAll(@Req() req: Request) {
+    const where = req['where'];
+    const pagination = req['pagination'] as Record<string, string | number>;
+
+    const data = await this.administratorsService.findAll({
+      where,
+      ...formatPagination(pagination),
+    });
 
     return {
       message: 'Administrator retrived successfully',
@@ -86,7 +98,6 @@ export class AdministratorsController {
       data: data.administrators,
     };
   }
-
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const data = await this.administratorsService.findOne({
