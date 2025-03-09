@@ -56,7 +56,14 @@ export class AdministratorsService {
     return this.prisma.administrator.findFirst(query);
   }
 
-  update(id: number, updateAdministratorDto: UpdateAdministratorDto) {
+  async update(id: number, updateAdministratorDto: UpdateAdministratorDto) {
+    if (updateAdministratorDto.password) {
+      updateAdministratorDto.password = await bcrypt.hash(
+        updateAdministratorDto.password,
+        saltRounds,
+      );
+    }
+
     return this.prisma.administrator.update({
       where: { id },
       data: updateAdministratorDto,

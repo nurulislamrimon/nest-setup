@@ -111,6 +111,7 @@ export class AdministratorsController {
   async findOne(@Param('id') id: string) {
     const data = await this.administratorsService.findOne({
       where: { id: +id },
+      select: administratorSelectedFields,
     });
     return { data };
   }
@@ -120,13 +121,20 @@ export class AdministratorsController {
     @Param('id') id: string,
     @Body() updateAdministratorDto: UpdateAdministratorDto,
   ) {
-    const data = await this.administratorsService.update(
+    const isExist = await this.administratorsService.findOne({
+      where: { id: +id },
+    });
+    if (!isExist) {
+      throw new NotFoundException('Administrator not found');
+    }
+    const result = await this.administratorsService.update(
       +id,
       updateAdministratorDto,
     );
-    return { data };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = result;
+    return { data: rest };
   }
-
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const isExist = await this.administratorsService.findOne({
