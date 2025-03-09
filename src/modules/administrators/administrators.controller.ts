@@ -21,6 +21,11 @@ import { Administrator } from '@prisma/client';
 import { SearchFilterAndPaginationInterceptor } from 'src/interceptors/searchFilterAndPagination.interceptor';
 import { Request } from 'express';
 import { formatPagination } from 'src/utils/format.utils';
+import {
+  administratorFilterableFields,
+  administratorSearchableFields,
+  administratorSelectedFields,
+} from './administrators.constants';
 
 @Controller('administrators')
 export class AdministratorsController {
@@ -79,8 +84,8 @@ export class AdministratorsController {
   @Public()
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor(
-      ['full_name', 'email'],
-      ['full_name', 'email'],
+      administratorSearchableFields,
+      administratorFilterableFields,
     ),
   )
   async findAll(@Req() req: Request) {
@@ -89,12 +94,17 @@ export class AdministratorsController {
 
     const data = await this.administratorsService.findAll({
       where,
+      select: administratorSelectedFields,
       ...formatPagination(pagination),
     });
 
     return {
       message: 'Administrator retrived successfully',
-      meta: { total: data.total, limit: 10, page: 1 },
+      meta: {
+        total: data.total,
+        limit: Number(pagination.limit),
+        page: Number(pagination.page),
+      },
       data: data.administrators,
     };
   }

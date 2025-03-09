@@ -133,9 +133,11 @@ export class SearchFilterAndPaginationInterceptor<
       });
     }
 
-    // Validate sortBy
+    // -----------------------------------
+    // Sorting format
+    // -----------------------------------
     const validatedSortBy: keyof IModelMappingsForWhere[T] =
-      this.searchableFields.includes(sortBy as keyof IModelMappingsForWhere[T])
+      this.filterableFields.includes(sortBy as keyof IModelMappingsForWhere[T])
         ? (sortBy as keyof IModelMappingsForWhere[T])
         : ('created_at' as keyof IModelMappingsForWhere[T]);
 
