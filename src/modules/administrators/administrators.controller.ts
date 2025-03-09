@@ -26,12 +26,14 @@ import {
   administratorSearchableFields,
   administratorSelectedFields,
 } from './administrators.constants';
+import { Roles } from 'src/decorators/Roles.decorator';
 
 @Controller('administrators')
 export class AdministratorsController {
   constructor(private readonly administratorsService: AdministratorsService) {}
 
   @Post('add')
+  @Roles('super_admin', 'admin')
   async create(@Body() createAdministratorDto: CreateAdministratorDto) {
     const data = await this.administratorsService.create(
       createAdministratorDto,
@@ -118,6 +120,7 @@ export class AdministratorsController {
   }
 
   @Patch(':id')
+  @Roles('super_admin', 'admin')
   async update(
     @Param('id') id: string,
     @Body() updateAdministratorDto: UpdateAdministratorDto,
@@ -138,6 +141,7 @@ export class AdministratorsController {
   }
 
   @Delete(':id')
+  @Roles('super_admin', 'admin')
   async remove(@Param('id') id: string) {
     const isExist = await this.administratorsService.findOne({
       where: { id: +id },
