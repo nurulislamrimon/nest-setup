@@ -81,7 +81,6 @@ export class AdministratorsController {
   }
 
   @Get()
-  @Public()
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor(
       administratorSearchableFields,
