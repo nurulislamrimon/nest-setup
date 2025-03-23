@@ -34,7 +34,8 @@ async function bootstrap() {
   );
   // response format
   app.useGlobalInterceptors(new ResponseInterceptor());
+
   // listen app
-  await app.listen(process.env.PORT ?? 5000);
+  await app.listen(envConfig.port);
 }
 void bootstrap();
