@@ -15,11 +15,13 @@ datasource db {
 
 // while creating a new model make sure added the model to the IModelMapping else filter and search will not work
 model Administrator {
-  id               Int       @id @default(autoincrement())
-  full_name        String
-  phone_number     String
-  email            String    @unique
-  password         String
+  id           Int        @id @default(autoincrement())
+  full_name    String
+  phone_number String
+  email        String     @unique
+  password     String
+  role         role_types @default(user)
+
   address          String?
   // dates
   login_ip         String?
@@ -29,4 +31,12 @@ model Administrator {
   deleted_at       DateTime?
 
   @@index([email])
+}
+
+// role enum
+enum role_types {
+  user
+  manager
+  admin
+  super_admin
 }
