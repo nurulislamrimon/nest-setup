@@ -35,10 +35,18 @@ export class AdministratorController {
   @Post('add')
   @Roles('super_admin', 'admin')
   async create(@Body() createAdministratorDto: CreateAdministratorDto) {
+    const isExist = await this.administratorService.findUnique({
+      where: { email: createAdministratorDto.email },
+    });
+    if (isExist) {
+      throw new BadRequestException('Administrator already exist');
+    }
     const data = await this.administratorService.create(createAdministratorDto);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = data;
     return {
       message: 'Administrator created successfully',
-      data,
+      data: rest,
     };
   }
 
@@ -46,8 +54,11 @@ export class AdministratorController {
   @Public()
   async login(
     @Body() loginAdministratorDto: LoginAdministratorDto,
-  ): Promise<ApiResponse<{ user: Administrator; accessToken: string }>> {
-    const isExist = await this.administratorService.findOne({
+    // @ClientIp() ip: string,
+  ): Promise<
+    ApiResponse<{ user: Omit<Administrator, 'password'>; accessToken: string }>
+  > {
+    const isExist = await this.administratorService.findUnique({
       where: { email: loginAdministratorDto.email },
     });
 
@@ -72,10 +83,16 @@ export class AdministratorController {
       role: isExist.role,
     });
 
+    // update ip address
+    // if (condition) {
+    // }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = isExist;
     return {
       message: 'Administrator created successfully',
       data: {
-        user: isExist,
+        user: rest,
         accessToken,
       },
     };
@@ -114,7 +131,7 @@ export class AdministratorController {
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
-    const data = await this.administratorService.findOne({
+    const data = await this.administratorService.findUnique({
       where: { id: +id },
       select: administratorSelectedFields,
     });
@@ -123,10 +140,13 @@ export class AdministratorController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const data = await this.administratorService.findOne({
+    const data = await this.administratorService.findUnique({
       where: { id: +id },
       select: administratorSelectedFields,
     });
+    if (!data) {
+      throw new NotFoundException('Administrator not found');
+    }
     return { data };
   }
 
@@ -140,7 +160,7 @@ export class AdministratorController {
     if (updateAdministratorDto.role) {
       throw new BadRequestException('You can not change your role');
     }
-    const isExist = await this.administratorService.findOne({
+    const isExist = await this.administratorService.findUnique({
       where: { id: +id },
     });
     if (!isExist) {
@@ -161,7 +181,7 @@ export class AdministratorController {
     @Param('id') id: string,
     @Body() updateAdministratorDto: UpdateAdministratorDto,
   ) {
-    const isExist = await this.administratorService.findOne({
+    const isExist = await this.administratorService.findUnique({
       where: { id: +id },
     });
 
@@ -181,7 +201,7 @@ export class AdministratorController {
   @Delete(':id')
   @Roles('super_admin', 'admin')
   async remove(@Param('id') id: string) {
-    const isExist = await this.administratorService.findOne({
+    const isExist = await this.administratorService.findUnique({
       where: { id: +id },
     });
     if (!isExist) throw new NotFoundException('Administrator not found');

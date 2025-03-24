@@ -8,7 +8,7 @@ import { Administrator, Prisma } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/library';
 import { saltRounds } from 'src/constants/common.constants';
 import { PasswordDto } from './dto/login-administrator.dto';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AdministratorService {
@@ -55,6 +55,10 @@ export class AdministratorService {
 
   findOne(query: Prisma.AdministratorFindFirstOrThrowArgs) {
     return this.prisma.administrator.findFirst(query);
+  }
+
+  findUnique(query: Prisma.AdministratorFindUniqueArgs) {
+    return this.prisma.administrator.findUnique(query);
   }
 
   async update(id: number, updateAdministratorDto: UpdateAdministratorDto) {

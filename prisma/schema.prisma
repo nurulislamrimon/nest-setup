@@ -21,14 +21,12 @@ model Administrator {
   email        String     @unique
   password     String
   role         role_types @default(user)
+  address      String?
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  deleted_at   DateTime?
 
-  address          String?
-  // dates
-  login_ip         String?
-  failed_attemp_ip String?
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-  deleted_at       DateTime?
+  Administrator_sessions AdministratorSession[]
 
   @@index([email])
 }
@@ -39,4 +37,22 @@ enum role_types {
   manager
   admin
   super_admin
+}
+
+model AdministratorSession {
+  id         Int       @id @default(autoincrement())
+  token      String
+  ip         String
+  user_agent String
+  device     String
+  platform   String
+  browser    String
+  is_active  Boolean   @default(true)
+  // dates
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  administrator_id Int
+  administrator    Administrator? @relation(fields: [administrator_id], references: [id])
 }
