@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateAdministratorSessionDto } from './dto/create-administrator.dto';
 import { Prisma } from '@prisma/client';
+import { CreateAdministratorSessionDto } from './dto/create-administrator-session.dto';
 
 @Injectable()
 export class AdministratorSessionService {
@@ -42,7 +40,7 @@ export class AdministratorSessionService {
     return data;
   }
 
-  async delete(query: Prisma.AdministratorSessionDeleteArgs) {
+  async remove(query: Prisma.AdministratorSessionDeleteArgs) {
     const data = await this.prisma.administratorSession.delete(query);
     return data;
   }

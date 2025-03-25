@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AdministratorModule } from './modules/administrator/administrator.module';
 import { RolesGuard } from './guards/RoleGuard';
 import { JwtAuthGuard } from './guards/JwtAuthGuards';
+import { AdministratorSessionModule } from './modules/administrator-session/administrator-session.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { JwtAuthGuard } from './guards/JwtAuthGuards';
     PrismaModule,
     // modules ==================
     AdministratorModule,
+    AdministratorSessionModule,
   ],
   controllers: [AppController],
   providers: [

@@ -41,7 +41,6 @@ enum role_types {
 
 model AdministratorSession {
   id         Int       @id @default(autoincrement())
-  token      String
   ip         String
   user_agent String
   device     String

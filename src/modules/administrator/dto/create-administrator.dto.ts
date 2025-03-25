@@ -23,25 +23,3 @@ export class CreateAdministratorDto {
 
   [key: string]: any;
 }
-
-export class CreateAdministratorSessionDto {
-  @IsString()
-  token: string;
-
-  @IsString()
-  ip: string;
-
-  @IsString()
-  user_agent: string;
-
-  @IsString()
-  device: string;
-
-  @IsString()
-  platform: string;
-
-  @IsString()
-  browser: string;
-
-  administrator_id: number;
-}

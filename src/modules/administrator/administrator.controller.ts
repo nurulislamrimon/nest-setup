@@ -27,10 +27,18 @@ import { Roles } from 'src/decorators/Roles.decorator';
 import { Public } from 'src/decorators/public.decorator';
 import { SearchFilterAndPaginationInterceptor } from 'src/interceptors/searchFilterAndPagination.interceptor';
 import { formatPagination } from 'src/utils/format.utils';
+import {
+  ClientInfo,
+  IClientInfo,
+} from 'src/decorators/param/ClientInfo.decorator';
+import { AdministratorSessionService } from '../administrator-session/administrator-session.service';
 
 @Controller('administrators')
 export class AdministratorController {
-  constructor(private readonly administratorService: AdministratorService) {}
+  constructor(
+    private readonly administratorService: AdministratorService,
+    private readonly administratorSessionService: AdministratorSessionService,
+  ) {}
 
   @Post('add')
   @Roles('super_admin', 'admin')
@@ -54,7 +62,7 @@ export class AdministratorController {
   @Public()
   async login(
     @Body() loginAdministratorDto: LoginAdministratorDto,
-    // @ClientIp() ip: string,
+    @ClientInfo() clientInfo: IClientInfo,
   ): Promise<
     ApiResponse<{ user: Omit<Administrator, 'password'>; accessToken: string }>
   > {
@@ -83,9 +91,12 @@ export class AdministratorController {
       role: isExist.role,
     });
 
-    // update ip address
-    // if (condition) {
-    // }
+    const administratorSessionData = {
+      administrator_id: isExist.id,
+      ...clientInfo,
+    };
+
+    await this.administratorSessionService.create(administratorSessionData);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = isExist;
@@ -109,7 +120,6 @@ export class AdministratorController {
   async findAll(@Req() req: Request) {
     const where = req['where'];
     const pagination = req['pagination'] as Record<string, string | number>;
-
     const data = await this.administratorService.findAll({
       where,
       select: administratorSelectedFields,
