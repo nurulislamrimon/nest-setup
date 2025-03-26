@@ -45,6 +45,7 @@ export class SellerController {
   @Post('add')
   @Roles('super_admin', 'admin')
   async create(@Body() createSellerDto: CreateSellerDto) {
+    console.log(createSellerDto);
     const isExist = await this.sellerService.findUnique({
       where: { email: createSellerDto.email },
     });
@@ -59,6 +60,7 @@ export class SellerController {
       createSellerDto.profilePhoto = result.fileName;
       uploadUrl = result.uploadUrl;
     }
+
     const data = await this.sellerService.create(createSellerDto);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;

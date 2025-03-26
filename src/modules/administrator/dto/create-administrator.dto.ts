@@ -12,6 +12,7 @@ export class CreateAdministratorDto {
   email: string;
 
   @IsEnum(AdministratorRoleEnum)
+  @IsOptional()
   role: AdministratorRoleEnum;
 
   @IsString()

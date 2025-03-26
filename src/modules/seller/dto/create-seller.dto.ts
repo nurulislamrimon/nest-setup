@@ -12,6 +12,7 @@ export class CreateSellerDto {
   email: string;
 
   @IsEnum(SellerRoleEnum)
+  @IsOptional()
   role: SellerRoleEnum;
 
   @IsString()
