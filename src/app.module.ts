@@ -12,6 +12,8 @@ import { AdministratorModule } from './modules/administrator/administrator.modul
 import { RolesGuard } from './guards/RoleGuard';
 import { JwtAuthGuard } from './guards/JwtAuthGuards';
 import { AdministratorSessionModule } from './modules/administrator-session/administrator-session.module';
+import { SellerModule } from './modules/seller/seller.module';
+import { SellerSessionModule } from './modules/seller-session/seller-session.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { AdministratorSessionModule } from './modules/administrator-session/admi
     // modules ==================
     AdministratorModule,
     AdministratorSessionModule,
+    SellerModule,
+    SellerSessionModule,
   ],
   controllers: [AppController],
   providers: [

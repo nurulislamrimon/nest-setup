@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { AdministratorRoleEnum } from 'src/constants/enum.constants';
+import { SellerRoleEnum } from 'src/constants/enum.constants';
 
-export class CreateAdministratorDto {
+export class CreateSellerDto {
   @IsString()
   full_name: string;
 
@@ -11,8 +11,8 @@ export class CreateAdministratorDto {
   @IsString()
   email: string;
 
-  @IsEnum(AdministratorRoleEnum)
-  role: AdministratorRoleEnum;
+  @IsEnum(SellerRoleEnum)
+  role: SellerRoleEnum;
 
   @IsString()
   password: string;
