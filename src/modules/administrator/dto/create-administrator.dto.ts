@@ -19,6 +19,10 @@ export class CreateAdministratorDto {
 
   @IsString()
   @IsOptional()
+  profilePhoto?: string;
+
+  @IsString()
+  @IsOptional()
   address?: string;
 
   [key: string]: any;

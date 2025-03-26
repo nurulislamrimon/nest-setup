@@ -42,6 +42,7 @@ export const administratorSelectedFields: AdministratorSelectedFields = {
   phone_number: true,
   email: true,
   role: true,
+  profilePhoto: true,
   //   password:true,
   address: true,
   created_at: true,

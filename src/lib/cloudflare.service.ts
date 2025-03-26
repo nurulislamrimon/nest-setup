@@ -7,6 +7,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { envConfig } from 'src/config/env.config';
+import * as path from 'path';
+import { lookup } from 'mime-types';
 
 @Injectable()
 export class CloudflareService {
@@ -27,14 +29,30 @@ export class CloudflareService {
   /**
    * Generate a pre-signed URL for uploading an image
    */
-  async getUploadUrl(fileKey: string, contentType: string): Promise<string> {
+  async getUploadUrl(fileKey: string): Promise<{
+    fileName: string;
+    uploadUrl: string;
+  }> {
+    const fileExt = path.extname(fileKey);
+    const fileName =
+      fileKey.replace(fileExt, '').toLowerCase().split(' ').join('-') +
+      Date.now() +
+      fileExt;
+    const contentType = lookup(fileExt) || 'application/octet-stream';
+
+    // Generate the PutObjectCommand for the file
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
-      Key: fileKey,
+      Key: fileName,
       ContentType: contentType,
     });
 
-    return await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    // Generate and return the pre-signed URL
+    const uploadUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    return {
+      fileName,
+      uploadUrl,
+    };
   }
 
   /**
@@ -52,12 +70,12 @@ export class CloudflareService {
   /**
    * Generate a pre-signed URL for deleting an image
    */
-  async getDeleteUrl(fileKey: string): Promise<string> {
+  async deleteFile(fileKey: string): Promise<void> {
     const command = new DeleteObjectCommand({
       Bucket: this.bucketName,
       Key: fileKey,
     });
 
-    return await getSignedUrl(this.s3, command);
+    await this.s3.send(command);
   }
 }
