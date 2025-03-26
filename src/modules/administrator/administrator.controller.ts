@@ -122,7 +122,7 @@ export class AdministratorController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -158,7 +158,7 @@ export class AdministratorController {
       data.administrators.map(async (ad) => {
         if (ad.profilePhoto) {
           const url = await this.cloudflareService.getDownloadUrl(
-            ad.profilePhoto as string,
+            ad.profilePhoto,
           );
           return { ...ad, profilePhotoUrl: url };
         }
@@ -193,7 +193,7 @@ export class AdministratorController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
 
@@ -213,7 +213,7 @@ export class AdministratorController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
 
@@ -239,7 +239,9 @@ export class AdministratorController {
     let uploadUrl: string | undefined;
     if (updateAdministratorDto.profilePhoto) {
       // delete existing
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      if (isExist.profilePhoto) {
+        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
         updateAdministratorDto.profilePhoto,
@@ -272,7 +274,9 @@ export class AdministratorController {
     let uploadUrl: string | undefined;
     if (updateAdministratorDto.profilePhoto) {
       // delete existing
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      if (isExist.profilePhoto) {
+        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
         updateAdministratorDto.profilePhoto,
@@ -298,7 +302,7 @@ export class AdministratorController {
     if (!isExist) throw new NotFoundException('Administrator not found');
 
     if (isExist.profilePhoto) {
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      await this.cloudflareService.deleteFile(isExist.profilePhoto);
     }
 
     const data = await this.administratorService.remove(+id);

@@ -119,7 +119,7 @@ export class SellerController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -155,7 +155,7 @@ export class SellerController {
       data.sellers.map(async (ad) => {
         if (ad.profilePhoto) {
           const url = await this.cloudflareService.getDownloadUrl(
-            ad.profilePhoto as string,
+            ad.profilePhoto,
           );
           return { ...ad, profilePhotoUrl: url };
         }
@@ -190,7 +190,7 @@ export class SellerController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
 
@@ -210,7 +210,7 @@ export class SellerController {
     let profilePhotoUrl: string | undefined;
     if (isExist.profilePhoto) {
       profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto as string,
+        isExist.profilePhoto,
       );
     }
 
@@ -236,7 +236,9 @@ export class SellerController {
     let uploadUrl: string | undefined;
     if (updateSellerDto.profilePhoto) {
       // delete existing
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      if (isExist.profilePhoto) {
+        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
         updateSellerDto.profilePhoto,
@@ -266,7 +268,9 @@ export class SellerController {
     let uploadUrl: string | undefined;
     if (updateSellerDto.profilePhoto) {
       // delete existing
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      if (isExist.profilePhoto) {
+        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
         updateSellerDto.profilePhoto,
@@ -289,7 +293,7 @@ export class SellerController {
     if (!isExist) throw new NotFoundException('Seller not found');
 
     if (isExist.profilePhoto) {
-      await this.cloudflareService.deleteFile(isExist.profilePhoto as string);
+      await this.cloudflareService.deleteFile(isExist.profilePhoto);
     }
 
     const data = await this.sellerService.remove(+id);
