@@ -49,6 +49,7 @@ export class AdministratorController {
     if (isExist) {
       throw new BadRequestException('Administrator already exist');
     }
+
     const data = await this.administratorService.create(createAdministratorDto);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;
@@ -96,7 +97,13 @@ export class AdministratorController {
       ...clientInfo,
     };
 
-    await this.administratorSessionService.create(administratorSessionData);
+    const administratorSession = await this.administratorSessionService.create(
+      administratorSessionData,
+    );
+
+    if (!administratorSession) {
+      throw new BadRequestException('Failed to create session');
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = isExist;
