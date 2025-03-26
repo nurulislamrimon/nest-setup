@@ -160,7 +160,7 @@ export class AdministratorController {
           const url = await this.cloudflareService.getDownloadUrl(
             ad.profilePhoto as string,
           );
-          return { ...ad, profilePhoto: url };
+          return { ...ad, profilePhotoUrl: url };
         }
         return ad;
       }),
