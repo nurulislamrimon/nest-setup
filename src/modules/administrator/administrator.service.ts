@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,10 +13,14 @@ import { DefaultArgs } from '@prisma/client/runtime/library';
 import { saltRounds } from 'src/constants/common.constants';
 import { PasswordDto } from './dto/login-administrator.dto';
 import * as jwt from 'jsonwebtoken';
+import { CloudflareService } from 'src/lib/cloudflare.service';
 
 @Injectable()
 export class AdministratorService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudflareService: CloudflareService,
+  ) {}
 
   async create(createAdministratorDto: CreateAdministratorDto) {
     createAdministratorDto.password = await bcrypt.hash(
@@ -84,7 +92,22 @@ export class AdministratorService {
     });
   }
 
-  remove(id: number) {
-    return this.prisma.administrator.delete({ where: { id } });
+  async remove(id: number) {
+    return await this.prisma.$transaction(async (trx) => {
+      const isExist = await trx.administrator.findUnique({ where: { id } });
+      if (!isExist) {
+        throw new NotFoundException('Administrator not found!');
+      }
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
+      }
+      await trx.administratorSession.deleteMany({
+        where: {
+          administrator_id: id,
+        },
+      });
+
+      return this.prisma.administrator.delete({ where: { id } });
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { SellerRoleEnum } from 'src/constants/enum.constants';
 
 export class CreateSellerDto {
@@ -20,7 +20,11 @@ export class CreateSellerDto {
 
   @IsString()
   @IsOptional()
-  profilePhoto?: string;
+  profile_photo?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
 
   @IsString()
   @IsOptional()

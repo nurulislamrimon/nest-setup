@@ -43,21 +43,54 @@ export class SellerController {
   ) {}
 
   @Post('add')
-  @Roles('super_admin', 'admin')
-  async create(@Body() createSellerDto: CreateSellerDto) {
-    console.log(createSellerDto);
+  async signUp(@Body() createSellerDto: CreateSellerDto) {
     const isExist = await this.sellerService.findUnique({
       where: { email: createSellerDto.email },
     });
-    if (isExist) {
+    if (isExist && isExist.is_active) {
+      throw new BadRequestException('Seller already exist');
+    }
+
+    let uploadUrl: string | undefined;
+    if (createSellerDto.profile_photo) {
+      const result = await this.cloudflareService.getUploadUrl(
+        createSellerDto.profile_photo,
+      );
+      createSellerDto.profile_photo = result.fileName;
+      uploadUrl = result.uploadUrl;
+    }
+    createSellerDto.is_active = false;
+
+    const data = await this.sellerService.create(createSellerDto);
+
+    // delete existing not active sellers
+    await this.sellerService.removeMany({
+      where: { email: createSellerDto.email, is_active: false },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = data;
+
+    return {
+      message: 'Seller created successfully',
+      data: { ...rest, uploadUrl },
+    };
+  }
+
+  @Post('add')
+  @Roles('super_admin', 'admin')
+  async create(@Body() createSellerDto: CreateSellerDto) {
+    const isExist = await this.sellerService.findUnique({
+      where: { email: createSellerDto.email },
+    });
+    if (isExist && isExist.is_active) {
       throw new BadRequestException('Seller already exist');
     }
     let uploadUrl: string | undefined;
-    if (createSellerDto.profilePhoto) {
+    if (createSellerDto.profile_photo) {
       const result = await this.cloudflareService.getUploadUrl(
-        createSellerDto.profilePhoto,
+        createSellerDto.profile_photo,
       );
-      createSellerDto.profilePhoto = result.fileName;
+      createSellerDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
 
@@ -78,7 +111,7 @@ export class SellerController {
   ): Promise<
     ApiResponse<{
       user: Omit<Seller, 'password'> & {
-        profilePhotoUrl: string | undefined;
+        profile_photo_url: string | undefined;
       };
 
       accessToken: string;
@@ -118,10 +151,10 @@ export class SellerController {
     if (!sellerSession) {
       throw new BadRequestException('Failed to create session');
     }
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -129,7 +162,7 @@ export class SellerController {
     return {
       message: 'Seller created successfully',
       data: {
-        user: { ...rest, profilePhotoUrl },
+        user: { ...rest, profile_photo_url },
         accessToken,
       },
     };
@@ -155,11 +188,11 @@ export class SellerController {
     // add presigned url for profile photos
     const sellers = await Promise.all(
       data.sellers.map(async (ad) => {
-        if (ad.profilePhoto) {
+        if (ad.profile_photo) {
           const url = await this.cloudflareService.getDownloadUrl(
-            ad.profilePhoto,
+            ad.profile_photo,
           );
-          return { ...ad, profilePhotoUrl: url };
+          return { ...ad, profile_photo_url: url };
         }
         return ad;
       }),
@@ -177,6 +210,7 @@ export class SellerController {
   }
 
   @Get('me')
+  @Roles('regular', 'premium')
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
@@ -189,17 +223,18 @@ export class SellerController {
       throw new NotFoundException("Seller doen't exist!");
     }
 
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
 
-    return { data: { ...isExist, profilePhotoUrl } };
+    return { data: { ...isExist, profile_photo_url } };
   }
 
   @Get(':id')
+  @Roles('super_admin', 'admin', 'manager')
   async findOne(@Param('id') id: string) {
     const isExist = await this.sellerService.findUnique({
       where: { id: +id },
@@ -209,17 +244,18 @@ export class SellerController {
       throw new NotFoundException('Seller not found');
     }
 
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
 
-    return { data: { ...isExist, profilePhotoUrl } };
+    return { data: { ...isExist, profile_photo_url } };
   }
 
   @Patch('update')
+  @Roles('regular', 'premium')
   async updateMe(
     @Body() updateSellerDto: UpdateSellerDto,
     @Req() req: Request,
@@ -236,16 +272,16 @@ export class SellerController {
       throw new NotFoundException('Seller not found');
     }
     let uploadUrl: string | undefined;
-    if (updateSellerDto.profilePhoto) {
+    if (updateSellerDto.profile_photo) {
       // delete existing
-      if (isExist.profilePhoto) {
-        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
       }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
-        updateSellerDto.profilePhoto,
+        updateSellerDto.profile_photo,
       );
-      updateSellerDto.profilePhoto = result.fileName;
+      updateSellerDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
     const result = await this.sellerService.update(+id, updateSellerDto);
@@ -268,16 +304,16 @@ export class SellerController {
       throw new NotFoundException('Seller not found');
     }
     let uploadUrl: string | undefined;
-    if (updateSellerDto.profilePhoto) {
+    if (updateSellerDto.profile_photo) {
       // delete existing
-      if (isExist.profilePhoto) {
-        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
       }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
-        updateSellerDto.profilePhoto,
+        updateSellerDto.profile_photo,
       );
-      updateSellerDto.profilePhoto = result.fileName;
+      updateSellerDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
     const result = await this.sellerService.update(+id, updateSellerDto);
@@ -289,15 +325,6 @@ export class SellerController {
   @Delete(':id')
   @Roles('super_admin', 'admin')
   async remove(@Param('id') id: string) {
-    const isExist = await this.sellerService.findUnique({
-      where: { id: +id },
-    });
-    if (!isExist) throw new NotFoundException('Seller not found');
-
-    if (isExist.profilePhoto) {
-      await this.cloudflareService.deleteFile(isExist.profilePhoto);
-    }
-
     const data = await this.sellerService.remove(+id);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;

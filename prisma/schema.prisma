@@ -15,17 +15,19 @@ datasource db {
 
 // while creating a new model make sure added the model to the IModelMapping else filter and search will not work
 model Administrator {
-  id           Int                      @id @default(autoincrement())
-  full_name    String
-  phone_number String
-  email        String                   @unique
-  password     String
-  role         administrator_role_types @default(user)
-  profilePhoto String?
-  address      String?
-  created_at   DateTime                 @default(now())
-  updated_at   DateTime                 @updatedAt
-  deleted_at   DateTime?
+  id            Int                      @id @default(autoincrement())
+  full_name     String
+  phone_number  String
+  email         String                   @unique
+  password      String
+  role          administrator_role_types @default(user)
+  profile_photo String?
+  address       String?
+
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   administrator_sessions AdministratorSession[]
 
@@ -61,17 +63,20 @@ model AdministratorSession {
 
 // while creating a new model make sure added the model to the IModelMapping else filter and search will not work
 model Seller {
-  id           Int               @id @default(autoincrement())
-  full_name    String
-  phone_number String
-  email        String            @unique
-  password     String
-  role         seller_role_types @default(regular)
-  profilePhoto String?
-  address      String?
-  created_at   DateTime          @default(now())
-  updated_at   DateTime          @updatedAt
-  deleted_at   DateTime?
+  id            Int               @id @default(autoincrement())
+  full_name     String
+  phone_number  String
+  email         String            @unique
+  password      String
+  role          seller_role_types @default(regular)
+  profile_photo String?
+  address       String?
+
+  is_active Boolean @default(true)
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   seller_sessions SellerSession[]
 

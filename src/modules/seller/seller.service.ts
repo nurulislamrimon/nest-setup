@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UpdateSellerDto } from './dto/update-seller.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,10 +13,14 @@ import { DefaultArgs } from '@prisma/client/runtime/library';
 import { saltRounds } from 'src/constants/common.constants';
 import * as jwt from 'jsonwebtoken';
 import { SellerPasswordDto } from './dto/login-seller';
+import { CloudflareService } from 'src/lib/cloudflare.service';
 
 @Injectable()
 export class SellerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudflareService: CloudflareService,
+  ) {}
 
   async create(createSellerDto: CreateSellerDto) {
     createSellerDto.password = await bcrypt.hash(
@@ -80,7 +88,44 @@ export class SellerService {
     });
   }
 
-  remove(id: number) {
-    return this.prisma.seller.delete({ where: { id } });
+  async remove(id: number) {
+    return await this.prisma.$transaction(async (trx) => {
+      const isExist = await trx.seller.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!isExist) {
+        throw new NotFoundException('Seller not found!');
+      }
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
+      }
+      await trx.sellerSession.deleteMany({
+        where: {
+          seller_id: id,
+        },
+      });
+
+      return await trx.seller.delete({ where: { id } });
+    });
+  }
+
+  async removeMany(query: Prisma.SellerDeleteManyArgs) {
+    return this.prisma.$transaction(async (trx) => {
+      const sellers = await trx.seller.findMany(query);
+
+      for (const seller of sellers) {
+        await trx.sellerSession.deleteMany({
+          where: { seller_id: seller.id },
+        });
+
+        if (seller.profile_photo) {
+          await this.cloudflareService.deleteFile(seller.profile_photo);
+        }
+      }
+
+      return await trx.seller.deleteMany(query);
+    });
   }
 }

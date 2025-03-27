@@ -7,6 +7,8 @@ export const sellerFilterableFields: (keyof Seller)[] = [
   'email',
   'role',
   'address',
+
+  'is_active',
   'created_at',
   'updated_at',
   'deleted_at',
@@ -22,10 +24,8 @@ export const sellerSearchableFields: (keyof Seller)[] = [
 // seller roles
 // ------------------------------------
 export const sellerRoles = {
-  SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
-  MANAGER: 'manager',
-  USER: 'user',
+  REGULAR: 'regular',
+  PREMIUM: 'premium',
 };
 
 // ------------------------------------
@@ -42,7 +42,7 @@ export const sellerSelectedFields: SellerSelectedFields = {
   phone_number: true,
   email: true,
   role: true,
-  profilePhoto: true,
+  profile_photo: true,
   //   password:true,
   address: true,
   created_at: true,

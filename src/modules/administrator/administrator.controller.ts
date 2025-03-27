@@ -52,11 +52,11 @@ export class AdministratorController {
       throw new BadRequestException('Administrator already exist');
     }
     let uploadUrl: string | undefined;
-    if (createAdministratorDto.profilePhoto) {
+    if (createAdministratorDto.profile_photo) {
       const result = await this.cloudflareService.getUploadUrl(
-        createAdministratorDto.profilePhoto,
+        createAdministratorDto.profile_photo,
       );
-      createAdministratorDto.profilePhoto = result.fileName;
+      createAdministratorDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
     const data = await this.administratorService.create(createAdministratorDto);
@@ -76,7 +76,7 @@ export class AdministratorController {
   ): Promise<
     ApiResponse<{
       user: Omit<Administrator, 'password'> & {
-        profilePhotoUrl: string | undefined;
+        profile_photo_url: string | undefined;
       };
 
       accessToken: string;
@@ -119,10 +119,10 @@ export class AdministratorController {
     if (!administratorSession) {
       throw new BadRequestException('Failed to create session');
     }
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -130,7 +130,7 @@ export class AdministratorController {
     return {
       message: 'Administrator created successfully',
       data: {
-        user: { ...rest, profilePhotoUrl },
+        user: { ...rest, profile_photo_url },
         accessToken,
       },
     };
@@ -156,11 +156,11 @@ export class AdministratorController {
     // add presigned url for profile photos
     const administrators = await Promise.all(
       data.administrators.map(async (ad) => {
-        if (ad.profilePhoto) {
+        if (ad.profile_photo) {
           const url = await this.cloudflareService.getDownloadUrl(
-            ad.profilePhoto,
+            ad.profile_photo,
           );
-          return { ...ad, profilePhotoUrl: url };
+          return { ...ad, profile_photo_url: url };
         }
         return ad;
       }),
@@ -178,6 +178,7 @@ export class AdministratorController {
   }
 
   @Get('me')
+  @Roles('super_admin', 'admin', 'manager', 'user')
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
@@ -190,17 +191,18 @@ export class AdministratorController {
       throw new NotFoundException("Administrator doen't exist!");
     }
 
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
 
-    return { data: { ...isExist, profilePhotoUrl } };
+    return { data: { ...isExist, profile_photo_url } };
   }
 
   @Get(':id')
+  @Roles('super_admin', 'admin', 'manager')
   async findOne(@Param('id') id: string) {
     const isExist = await this.administratorService.findUnique({
       where: { id: +id },
@@ -210,17 +212,18 @@ export class AdministratorController {
       throw new NotFoundException('Administrator not found');
     }
 
-    let profilePhotoUrl: string | undefined;
-    if (isExist.profilePhoto) {
-      profilePhotoUrl = await this.cloudflareService.getDownloadUrl(
-        isExist.profilePhoto,
+    let profile_photo_url: string | undefined;
+    if (isExist.profile_photo) {
+      profile_photo_url = await this.cloudflareService.getDownloadUrl(
+        isExist.profile_photo,
       );
     }
 
-    return { data: { ...isExist, profilePhotoUrl } };
+    return { data: { ...isExist, profile_photo_url } };
   }
 
   @Patch('update')
+  @Roles('super_admin', 'admin', 'manager', 'user')
   async updateMe(
     @Body() updateAdministratorDto: UpdateAdministratorDto,
     @Req() req: Request,
@@ -237,16 +240,16 @@ export class AdministratorController {
       throw new NotFoundException('Administrator not found');
     }
     let uploadUrl: string | undefined;
-    if (updateAdministratorDto.profilePhoto) {
+    if (updateAdministratorDto.profile_photo) {
       // delete existing
-      if (isExist.profilePhoto) {
-        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
       }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
-        updateAdministratorDto.profilePhoto,
+        updateAdministratorDto.profile_photo,
       );
-      updateAdministratorDto.profilePhoto = result.fileName;
+      updateAdministratorDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
     const result = await this.administratorService.update(
@@ -272,16 +275,16 @@ export class AdministratorController {
       throw new NotFoundException('Administrator not found');
     }
     let uploadUrl: string | undefined;
-    if (updateAdministratorDto.profilePhoto) {
+    if (updateAdministratorDto.profile_photo) {
       // delete existing
-      if (isExist.profilePhoto) {
-        await this.cloudflareService.deleteFile(isExist.profilePhoto);
+      if (isExist.profile_photo) {
+        await this.cloudflareService.deleteFile(isExist.profile_photo);
       }
       // add new
       const result = await this.cloudflareService.getUploadUrl(
-        updateAdministratorDto.profilePhoto,
+        updateAdministratorDto.profile_photo,
       );
-      updateAdministratorDto.profilePhoto = result.fileName;
+      updateAdministratorDto.profile_photo = result.fileName;
       uploadUrl = result.uploadUrl;
     }
     const result = await this.administratorService.update(
@@ -296,15 +299,6 @@ export class AdministratorController {
   @Delete(':id')
   @Roles('super_admin', 'admin')
   async remove(@Param('id') id: string) {
-    const isExist = await this.administratorService.findUnique({
-      where: { id: +id },
-    });
-    if (!isExist) throw new NotFoundException('Administrator not found');
-
-    if (isExist.profilePhoto) {
-      await this.cloudflareService.deleteFile(isExist.profilePhoto);
-    }
-
     const data = await this.administratorService.remove(+id);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;
