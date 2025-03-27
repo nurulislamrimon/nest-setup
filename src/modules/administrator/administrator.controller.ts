@@ -13,9 +13,7 @@ import {
 } from '@nestjs/common';
 import { CreateAdministratorDto } from './dto/create-administrator.dto';
 import { UpdateAdministratorDto } from './dto/update-administrator.dto';
-import { ApiResponse } from 'src/interceptors/response.interceptor';
 import { LoginAdministratorDto } from './dto/login-administrator.dto';
-import { Administrator } from '@prisma/client';
 import { Request } from 'express';
 import {
   administratorFilterableFields,
@@ -42,6 +40,10 @@ export class AdministratorController {
     private readonly cloudflareService: CloudflareService,
   ) {}
 
+  /**
+   * API: Controller
+   * Message: Create - administrator
+   */
   @Post('add')
   @Roles('super_admin', 'admin')
   async create(@Body() createAdministratorDto: CreateAdministratorDto) {
@@ -51,37 +53,25 @@ export class AdministratorController {
     if (isExist) {
       throw new BadRequestException('Administrator already exist');
     }
-    let uploadUrl: string | undefined;
-    if (createAdministratorDto.profile_photo) {
-      const result = await this.cloudflareService.getUploadUrl(
-        createAdministratorDto.profile_photo,
-      );
-      createAdministratorDto.profile_photo = result.fileName;
-      uploadUrl = result.uploadUrl;
-    }
     const data = await this.administratorService.create(createAdministratorDto);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;
     return {
       message: 'Administrator created successfully',
-      data: { ...rest, uploadUrl },
+      data: { ...rest },
     };
   }
 
+  /**
+   * API: Controller
+   * Message: Login - administrator
+   */
   @Post('login')
   @Public()
   async login(
     @Body() loginAdministratorDto: LoginAdministratorDto,
     @ClientInfo() clientInfo: IClientInfo,
-  ): Promise<
-    ApiResponse<{
-      user: Omit<Administrator, 'password'> & {
-        profile_photo_url: string | undefined;
-      };
-
-      accessToken: string;
-    }>
-  > {
+  ) {
     const isExist = await this.administratorService.findUnique({
       where: { email: loginAdministratorDto.email },
     });
@@ -136,6 +126,10 @@ export class AdministratorController {
     };
   }
 
+  /**
+   * API: Controller
+   * Message: Get All - administrator
+   */
   @Get()
   @Roles('super_admin', 'admin', 'manager')
   @UseInterceptors(
@@ -153,19 +147,6 @@ export class AdministratorController {
       ...formatPagination(pagination),
     });
 
-    // add presigned url for profile photos
-    const administrators = await Promise.all(
-      data.administrators.map(async (ad) => {
-        if (ad.profile_photo) {
-          const url = await this.cloudflareService.getDownloadUrl(
-            ad.profile_photo,
-          );
-          return { ...ad, profile_photo_url: url };
-        }
-        return ad;
-      }),
-    );
-
     return {
       message: 'Administrator retrived successfully',
       meta: {
@@ -173,55 +154,45 @@ export class AdministratorController {
         limit: Number(pagination.limit),
         page: Number(pagination.page),
       },
-      data: administrators,
+      data: data.administrators,
     };
   }
 
+  /**
+   * API: Controller
+   * Message: Get Me - administrator
+   */
   @Get('me')
   @Roles('super_admin', 'admin', 'manager', 'user')
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
-    const isExist = await this.administratorService.findUnique({
+    const isExist = await this.administratorService.findUniqueWithPhoto({
       where: { id: +id },
       select: administratorSelectedFields,
     });
 
-    if (!isExist) {
-      throw new NotFoundException("Administrator doen't exist!");
-    }
-
-    let profile_photo_url: string | undefined;
-    if (isExist.profile_photo) {
-      profile_photo_url = await this.cloudflareService.getDownloadUrl(
-        isExist.profile_photo,
-      );
-    }
-
-    return { data: { ...isExist, profile_photo_url } };
+    return { data: isExist };
   }
 
+  /**
+   * API: Controller
+   * Message: Get One - administrator
+   */
   @Get(':id')
   @Roles('super_admin', 'admin', 'manager')
   async findOne(@Param('id') id: string) {
-    const isExist = await this.administratorService.findUnique({
+    const isExist = await this.administratorService.findUniqueWithPhoto({
       where: { id: +id },
       select: administratorSelectedFields,
     });
-    if (!isExist) {
-      throw new NotFoundException('Administrator not found');
-    }
-
-    let profile_photo_url: string | undefined;
-    if (isExist.profile_photo) {
-      profile_photo_url = await this.cloudflareService.getDownloadUrl(
-        isExist.profile_photo,
-      );
-    }
-
-    return { data: { ...isExist, profile_photo_url } };
+    return { data: isExist };
   }
 
+  /**
+   * API: Controller
+   * Message: Update Me - administrator
+   */
   @Patch('update')
   @Roles('super_admin', 'admin', 'manager', 'user')
   async updateMe(
@@ -233,34 +204,19 @@ export class AdministratorController {
     if (updateAdministratorDto.role) {
       throw new BadRequestException('You can not change your role');
     }
-    const isExist = await this.administratorService.findUnique({
-      where: { id: +id },
-    });
-    if (!isExist) {
-      throw new NotFoundException('Administrator not found');
-    }
-    let uploadUrl: string | undefined;
-    if (updateAdministratorDto.profile_photo) {
-      // delete existing
-      if (isExist.profile_photo) {
-        await this.cloudflareService.deleteFile(isExist.profile_photo);
-      }
-      // add new
-      const result = await this.cloudflareService.getUploadUrl(
-        updateAdministratorDto.profile_photo,
-      );
-      updateAdministratorDto.profile_photo = result.fileName;
-      uploadUrl = result.uploadUrl;
-    }
     const result = await this.administratorService.update(
       +id,
       updateAdministratorDto,
     );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = result;
-    return { data: { ...rest, uploadUrl } };
+    return { data: rest };
   }
 
+  /**
+   * API: Controller
+   * Message: Update - administrator
+   */
   @Patch(':id')
   @Roles('super_admin', 'admin')
   async updateById(
@@ -274,28 +230,19 @@ export class AdministratorController {
     if (!isExist) {
       throw new NotFoundException('Administrator not found');
     }
-    let uploadUrl: string | undefined;
-    if (updateAdministratorDto.profile_photo) {
-      // delete existing
-      if (isExist.profile_photo) {
-        await this.cloudflareService.deleteFile(isExist.profile_photo);
-      }
-      // add new
-      const result = await this.cloudflareService.getUploadUrl(
-        updateAdministratorDto.profile_photo,
-      );
-      updateAdministratorDto.profile_photo = result.fileName;
-      uploadUrl = result.uploadUrl;
-    }
     const result = await this.administratorService.update(
       +id,
       updateAdministratorDto,
     );
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = result;
-    return { data: { ...rest, uploadUrl } };
+    return { data: rest };
   }
 
+  /**
+   * API: Controller
+   * Message: Delete - administrator
+   */
   @Delete(':id')
   @Roles('super_admin', 'admin')
   async remove(@Param('id') id: string) {
