@@ -20,6 +20,10 @@ import { formatPagination } from 'src/utils/format.utils';
 export class SellerSessionController {
   constructor(private readonly sellerSessionService: SellerSessionService) {}
 
+  /**
+   * API: Controller
+   * Message: Get All - seller-session
+   */
   @Get()
   @Roles('super_admin', 'admin')
   @UseInterceptors(
@@ -51,6 +55,10 @@ export class SellerSessionController {
     };
   }
 
+  /**
+   * API: Controller
+   * Message: Get One - seller-session
+   */
   @Get(':id')
   @Roles('super_admin', 'admin')
   async findOne(@Param('id') id: string) {

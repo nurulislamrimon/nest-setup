@@ -22,6 +22,10 @@ export class AdministratorSessionController {
     private readonly administratorSessionService: AdministratorSessionService,
   ) {}
 
+  /**
+   * API: Controller
+   * Message: Get All - administrator-session
+   */
   @Get()
   @Roles('super_admin', 'admin')
   @UseInterceptors(
@@ -53,6 +57,10 @@ export class AdministratorSessionController {
     };
   }
 
+  /**
+   * API: Controller
+   * Message: Get One - administrator-session
+   */
   @Get(':id')
   @Roles('super_admin', 'admin')
   async findOne(@Param('id') id: string) {
