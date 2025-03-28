@@ -83,6 +83,8 @@ model Seller {
 
   seller_sessions SellerSession[]
 
+  Parcel_statistics Parcel_statistics[]
+
   @@index([email])
 }
 
@@ -107,4 +109,19 @@ model SellerSession {
 
   seller_id Int
   seller    Seller? @relation(fields: [seller_id], references: [id])
+}
+
+model Parcel_statistics {
+  id           Int       @id @default(autoincrement())
+  phone_number String
+  request_no   Int       @default(1)
+  // dates
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  seller_id Int
+  seller    Seller? @relation(fields: [seller_id], references: [id])
+
+  @@index([phone_number, seller_id])
 }

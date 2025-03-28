@@ -15,6 +15,7 @@ import { AdministratorSessionModule } from './modules/administrator-session/admi
 import { SellerModule } from './modules/seller/seller.module';
 import { SellerSessionModule } from './modules/seller-session/seller-session.module';
 import { MailModule } from './modules/mail/mail.module';
+import { ParcelStatisticsModule } from './modules/parcel/parcel-statistics.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MailModule } from './modules/mail/mail.module';
     SellerModule,
     SellerSessionModule,
     MailModule,
+    ParcelStatisticsModule,
   ],
   controllers: [AppController],
   providers: [
