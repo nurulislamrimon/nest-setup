@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateSellerDto } from './dto/create-seller.dto';
@@ -14,12 +15,14 @@ import { saltRounds } from 'src/constants/common.constants';
 import * as jwt from 'jsonwebtoken';
 import { SellerPasswordDto } from './dto/login-seller';
 import { CloudflareService } from 'src/lib/cloudflare.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class SellerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudflareService: CloudflareService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -55,6 +58,49 @@ export class SellerService {
       passwordDto.inputPassword,
       passwordDto.currentPassword,
     );
+  }
+
+  /**
+   * API: Service
+   * Message: send verification otp - seller
+   */
+  async sendEmailVerificationOTP(email: string) {
+    try {
+      const isExist = await this.findUnique({ where: { email: email } });
+
+      if (!isExist) {
+        throw new NotFoundException('Seller not found!');
+      }
+      // create 4 digit otp
+      const otpCode = Math.floor(1000 + Math.random() * 9000);
+
+      // generate token using otpCode for 2 minutes
+      const token = jwt.sign(
+        { otp: otpCode } as jwt.JwtPayload,
+        envConfig.access_token_secret,
+        { expiresIn: 2 * 60 },
+      );
+
+      // update emailVerificationToken in the user collection
+      await this.prisma.seller.update({
+        where: { email, is_verified: false },
+        data: { temp_token: token },
+      });
+
+      // send mail to user with otp
+      const mail = await this.mailService.sendMail({
+        to: email,
+        subject: 'Confirmation code for mail verification!',
+        text: `Your OTP : ${otpCode}`,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return mail;
+    } catch (error) {
+      console.log('Error sending email:', error);
+      throw new InternalServerErrorException(
+        'Failed to send verification OTP!',
+      );
+    }
   }
 
   /**

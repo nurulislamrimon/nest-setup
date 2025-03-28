@@ -54,17 +54,19 @@ export class SellerController {
     }
     createSellerDto.is_active = false;
 
-    const data = await this.sellerService.create(createSellerDto);
-
     // delete existing not active sellers
     await this.sellerService.removeMany({
       where: { email: createSellerDto.email, is_active: false },
     });
+
+    const data = await this.sellerService.create(createSellerDto);
+
+    await this.sellerService.sendEmailVerificationOTP(createSellerDto.email);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = data;
 
     return {
-      message: 'Seller created successfully',
+      message: 'OTP sended successfully!',
       data: rest,
     };
   }
@@ -104,7 +106,11 @@ export class SellerController {
     @ClientInfo() clientInfo: IClientInfo,
   ) {
     const isExist = await this.sellerService.findUnique({
-      where: { email: loginSellerDto.email },
+      where: {
+        email: loginSellerDto.email,
+        is_verified: true,
+        is_active: true,
+      },
     });
 
     if (!isExist) {

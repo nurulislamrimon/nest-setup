@@ -72,7 +72,10 @@ model Seller {
   profile_photo String?
   address       String?
 
-  is_active Boolean @default(true)
+  is_active   Boolean @default(true)
+  is_verified Boolean @default(false)
+
+  temp_token String? @db.LongText
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt

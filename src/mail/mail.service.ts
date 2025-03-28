@@ -24,10 +24,10 @@ export class MailService {
     attachments,
   }: {
     to: string;
-    bcc?: string | string[];
     subject: string;
     text?: string;
     html?: string;
+    bcc?: string | string[];
     userFrom?: string;
     platformName?: string;
     attachments?: { filename: string; path: string }[];

@@ -12,4 +12,4 @@ export const dateFields: string[] = [
   'deleted_at',
 ];
 
-export const booleanFields: string[] = ['is_active'];
+export const booleanFields: string[] = ['is_active', 'is_verified'];

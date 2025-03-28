@@ -73,7 +73,7 @@ export class AdministratorController {
     @ClientInfo() clientInfo: IClientInfo,
   ) {
     const isExist = await this.administratorService.findUnique({
-      where: { email: loginAdministratorDto.email },
+      where: { email: loginAdministratorDto.email, is_active: true },
     });
 
     if (!isExist) {
