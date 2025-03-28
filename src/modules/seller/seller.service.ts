@@ -15,7 +15,7 @@ import { saltRounds } from 'src/constants/common.constants';
 import * as jwt from 'jsonwebtoken';
 import { SellerPasswordDto } from './dto/login-seller';
 import { CloudflareService } from 'src/lib/cloudflare.service';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from 'src/modules/mail/mail.service';
 
 @Injectable()
 export class SellerService {

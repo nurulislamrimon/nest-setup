@@ -14,7 +14,7 @@ import { JwtAuthGuard } from './guards/JwtAuthGuards';
 import { AdministratorSessionModule } from './modules/administrator-session/administrator-session.module';
 import { SellerModule } from './modules/seller/seller.module';
 import { SellerSessionModule } from './modules/seller-session/seller-session.module';
-import { MailModule } from './mail/mail.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
