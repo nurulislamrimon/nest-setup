@@ -15,6 +15,7 @@ import {
   sellerSessionSelectedFields,
 } from './seller-session.constants';
 import { formatPagination } from 'src/utils/format.utils';
+import { AdministratorRoleEnum } from 'src/constants/enum.constants';
 
 @Controller('sellers-session')
 export class SellerSessionController {
@@ -25,7 +26,7 @@ export class SellerSessionController {
    * Message: Get All - seller-session
    */
   @Get()
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor<'Seller_session'>(
       sellerSessionSearchableFields,
@@ -60,7 +61,7 @@ export class SellerSessionController {
    * Message: Get One - seller-session
    */
   @Get(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async findOne(@Param('id') id: string) {
     const data = await this.sellerSessionService.findUnique({
       where: { id: +id },

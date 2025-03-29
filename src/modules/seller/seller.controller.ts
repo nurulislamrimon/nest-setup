@@ -31,6 +31,10 @@ import {
 import { CloudflareService } from 'src/lib/cloudflare.service';
 import { SellerSessionService } from '../seller-session/seller-session.service';
 import { LoginSellerDto } from './dto/login-seller';
+import {
+  AdministratorRoleEnum,
+  SellerRoleEnum,
+} from 'src/constants/enum.constants';
 
 @Controller('sellers')
 export class SellerController {
@@ -76,7 +80,7 @@ export class SellerController {
    * Message: Create - seller
    */
   @Post('add')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async create(@Body() createSellerDto: CreateSellerDto) {
     const isExist = await this.sellerService.findUnique({
       where: { email: createSellerDto.email, is_active: true },
@@ -165,7 +169,11 @@ export class SellerController {
    * Message: Get All - seller
    */
   @Get()
-  @Roles('super_admin', 'admin', 'manager')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+  )
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor<'Seller'>(
       sellerSearchableFields,
@@ -197,7 +205,7 @@ export class SellerController {
    * Message: Get Me - seller
    */
   @Get('me')
-  @Roles('regular', 'premium')
+  @Roles(SellerRoleEnum.SELLER)
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
@@ -214,7 +222,11 @@ export class SellerController {
    * Message: Get Unique - seller
    */
   @Get(':id')
-  @Roles('super_admin', 'admin', 'manager')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+  )
   async findOne(@Param('id') id: string) {
     const isExist = await this.sellerService.findUniqueWithPhoto({
       where: { id: +id },
@@ -229,7 +241,7 @@ export class SellerController {
    * Message: Update Me - seller
    */
   @Patch('update')
-  @Roles('regular', 'premium')
+  @Roles(SellerRoleEnum.SELLER)
   async updateMe(
     @Body() updateSellerDto: UpdateSellerDto,
     @Req() req: Request,
@@ -250,7 +262,7 @@ export class SellerController {
    * Message: Update - seller
    */
   @Patch(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async updateById(
     @Param('id') id: string,
     @Body() updateSellerDto: UpdateSellerDto,
@@ -273,7 +285,7 @@ export class SellerController {
    * Message: Delete - seller
    */
   @Delete(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async remove(@Param('id') id: string) {
     const data = await this.sellerService.remove(+id);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

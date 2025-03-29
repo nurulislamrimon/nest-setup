@@ -17,13 +17,14 @@ import {
   parcelStatisticsSearchableFields,
 } from './parcel-statistics.constants';
 import { formatPagination } from 'src/utils/format.utils';
+import { AdministratorRoleEnum } from 'src/constants/enum.constants';
 
-@Controller('parcel')
+@Controller('parcel-statistics')
 export class ParcelStatisticsController {
   constructor(private readonly parcelService: ParcelStatisticsService) {}
 
   @Get()
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor<'Parcel_statistics'>(
       parcelStatisticsSearchableFields,
@@ -46,6 +47,11 @@ export class ParcelStatisticsController {
       },
       data: result.data,
     };
+  }
+
+  @Get(':phone')
+  getStatisticsFromServer(@Param('phone') phone: string) {
+    return this.parcelService.getStatisticsFromServer(phone);
   }
 
   @Get(':id')

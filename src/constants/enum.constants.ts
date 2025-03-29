@@ -6,6 +6,5 @@ export enum AdministratorRoleEnum {
 }
 
 export enum SellerRoleEnum {
-  REGULAR = 'regular',
-  PREMIUM = 'premium',
+  SELLER = 'seller',
 }

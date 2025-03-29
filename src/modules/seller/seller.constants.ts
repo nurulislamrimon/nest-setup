@@ -24,8 +24,7 @@ export const sellerSearchableFields: (keyof Seller)[] = [
 // seller roles
 // ------------------------------------
 export const sellerRoles = {
-  REGULAR: 'regular',
-  PREMIUM: 'premium',
+  SELLER: 'seller',
 };
 
 // ------------------------------------

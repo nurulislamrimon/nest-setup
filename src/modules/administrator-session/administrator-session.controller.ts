@@ -15,6 +15,7 @@ import {
   administratorSessionSelectedFields,
 } from './administrator-session.constants';
 import { formatPagination } from 'src/utils/format.utils';
+import { AdministratorRoleEnum } from 'src/constants/enum.constants';
 
 @Controller('administrators-session')
 export class AdministratorSessionController {
@@ -27,7 +28,7 @@ export class AdministratorSessionController {
    * Message: Get All - administrator-session
    */
   @Get()
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor<'Administrator_session'>(
       administratorSessionSearchableFields,
@@ -62,7 +63,7 @@ export class AdministratorSessionController {
    * Message: Get One - administrator-session
    */
   @Get(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async findOne(@Param('id') id: string) {
     const data = await this.administratorSessionService.findUnique({
       where: { id: +id },

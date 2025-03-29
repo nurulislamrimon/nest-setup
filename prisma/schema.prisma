@@ -68,7 +68,7 @@ model Seller {
   phone_number  String
   email         String            @unique
   password      String
-  role          seller_role_types @default(regular)
+  role          seller_role_types @default(seller)
   profile_photo String?
   address       String?
 
@@ -90,8 +90,7 @@ model Seller {
 
 // role enum
 enum seller_role_types {
-  regular
-  premium
+  seller
 }
 
 model SellerSession {

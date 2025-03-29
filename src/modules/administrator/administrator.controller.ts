@@ -31,6 +31,7 @@ import {
 } from 'src/decorators/param/ClientInfo.decorator';
 import { AdministratorSessionService } from '../administrator-session/administrator-session.service';
 import { CloudflareService } from 'src/lib/cloudflare.service';
+import { AdministratorRoleEnum } from 'src/constants/enum.constants';
 
 @Controller('administrators')
 export class AdministratorController {
@@ -45,7 +46,7 @@ export class AdministratorController {
    * Message: Create - administrator
    */
   @Post('add')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async create(@Body() createAdministratorDto: CreateAdministratorDto) {
     const isExist = await this.administratorService.findUnique({
       where: { email: createAdministratorDto.email },
@@ -131,7 +132,11 @@ export class AdministratorController {
    * Message: Get All - administrator
    */
   @Get()
-  @Roles('super_admin', 'admin', 'manager')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+  )
   @UseInterceptors(
     new SearchFilterAndPaginationInterceptor<'Administrator'>(
       administratorSearchableFields,
@@ -163,7 +168,12 @@ export class AdministratorController {
    * Message: Get Me - administrator
    */
   @Get('me')
-  @Roles('super_admin', 'admin', 'manager', 'user')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+    AdministratorRoleEnum.USER,
+  )
   async findMe(@Req() req: Request) {
     const user = req['user'] as Record<string, any>;
     const id = user?.id;
@@ -180,7 +190,11 @@ export class AdministratorController {
    * Message: Get One - administrator
    */
   @Get(':id')
-  @Roles('super_admin', 'admin', 'manager')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+  )
   async findOne(@Param('id') id: string) {
     const isExist = await this.administratorService.findUniqueWithPhoto({
       where: { id: +id },
@@ -194,7 +208,12 @@ export class AdministratorController {
    * Message: Update Me - administrator
    */
   @Patch('update')
-  @Roles('super_admin', 'admin', 'manager', 'user')
+  @Roles(
+    AdministratorRoleEnum.SUPER_ADMIN,
+    AdministratorRoleEnum.ADMIN,
+    AdministratorRoleEnum.MANAGER,
+    AdministratorRoleEnum.USER,
+  )
   async updateMe(
     @Body() updateAdministratorDto: UpdateAdministratorDto,
     @Req() req: Request,
@@ -218,7 +237,7 @@ export class AdministratorController {
    * Message: Update - administrator
    */
   @Patch(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async updateById(
     @Param('id') id: string,
     @Body() updateAdministratorDto: UpdateAdministratorDto,
@@ -244,7 +263,7 @@ export class AdministratorController {
    * Message: Delete - administrator
    */
   @Delete(':id')
-  @Roles('super_admin', 'admin')
+  @Roles(AdministratorRoleEnum.SUPER_ADMIN, AdministratorRoleEnum.ADMIN)
   async remove(@Param('id') id: string) {
     const data = await this.administratorService.remove(+id);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

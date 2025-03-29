@@ -26,4 +26,8 @@ export const envConfig = {
   mail_port: process.env.MAIL_PORT || 465,
   mail_user: process.env.MAIL_USER,
   mail_password: process.env.MAIL_PASSWORD,
+
+  // parcel config
+  courierUrl: process.env.COURIER_URL,
+  courierKey: process.env.COURIER_KEY,
 };
