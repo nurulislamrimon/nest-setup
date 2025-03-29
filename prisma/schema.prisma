@@ -122,5 +122,5 @@ model Parcel_statistics {
   seller_id Int
   seller    Seller? @relation(fields: [seller_id], references: [id])
 
-  @@index([phone_number, seller_id])
+  @@unique([phone_number, seller_id])
 }

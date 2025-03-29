@@ -274,6 +274,7 @@ export class SellerController {
     if (!isExist) {
       throw new NotFoundException('Seller not found');
     }
+
     const result = await this.sellerService.update(+id, updateSellerDto);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = result;

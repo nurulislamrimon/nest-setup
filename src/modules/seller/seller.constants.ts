@@ -42,6 +42,8 @@ export const sellerSelectedFields: SellerSelectedFields = {
   email: true,
   role: true,
   profile_photo: true,
+  is_active: true,
+  is_verified: true,
   //   password:true,
   address: true,
   created_at: true,

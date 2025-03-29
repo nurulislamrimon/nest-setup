@@ -26,6 +26,10 @@ export class CreateSellerDto {
   @IsOptional()
   is_active?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  is_verified?: boolean;
+
   @IsString()
   @IsOptional()
   address?: string;

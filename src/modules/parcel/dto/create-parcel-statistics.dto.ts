@@ -6,7 +6,7 @@ export class CreateParcelStatisticsDto {
 
   @IsNumber()
   @IsOptional()
-  request_no: number;
+  request_no?: number;
 
   @IsNumber()
   seller_id: number;

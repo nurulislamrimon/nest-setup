@@ -3,7 +3,7 @@ export const saltRounds = 10;
 export const uploadDir = './public';
 
 // search and filters fields
-export const numberFields: string[] = ['id'];
+export const numberFields: string[] = ['id', 'request_no', 'seller_id'];
 
 export const dateFields: string[] = [
   'last_login_at',

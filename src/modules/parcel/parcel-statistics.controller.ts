@@ -1,15 +1,13 @@
 import {
   Controller,
   Get,
-  Body,
-  Patch,
   Param,
   Delete,
   UseInterceptors,
   Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { ParcelStatisticsService } from './parcel-statistics.service';
-import { UpdateParcelStatisticsDto } from './dto/update-parcel-statistics.dto';
 import { Roles } from 'src/decorators/Roles.decorator';
 import { SearchFilterAndPaginationInterceptor } from 'src/interceptors/searchFilterAndPagination.interceptor';
 import {
@@ -17,7 +15,12 @@ import {
   parcelStatisticsSearchableFields,
 } from './parcel-statistics.constants';
 import { formatPagination } from 'src/utils/format.utils';
-import { AdministratorRoleEnum } from 'src/constants/enum.constants';
+import {
+  AdministratorRoleEnum,
+  SellerRoleEnum,
+} from 'src/constants/enum.constants';
+import { Request } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Controller('parcel-statistics')
 export class ParcelStatisticsController {
@@ -50,28 +53,29 @@ export class ParcelStatisticsController {
   }
 
   @Get(':phone')
-  getStatisticsFromServer(@Param('phone') phone: string) {
-    return this.parcelService.getStatisticsFromServer(phone);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.parcelService.findOne({ where: { id: +id } });
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateParcelDto: UpdateParcelStatisticsDto,
+  async getStatisticsFromServer(
+    @Req() req: Request,
+    @Param('phone') phone: string,
   ) {
-    return this.parcelService.update({
-      where: { id: +id },
-      data: updateParcelDto,
-    });
+    const user = req.user as JwtPayload;
+
+    const result = await this.parcelService.getStatisticsFromServer(phone);
+    // update user history
+    if (user.role === SellerRoleEnum.SELLER) {
+      await this.parcelService.upsert({
+        phone_number: result.phoneNumber,
+        seller_id: user.id,
+      });
+    }
+    return result;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.parcelService.remove({ where: { id: +id } });
+  async remove(@Param('id') id: string) {
+    const isExist = await this.parcelService.findUnique({ where: { id: +id } });
+    if (!isExist) {
+      throw new NotFoundException('Parcel statistics not found!');
+    }
+    return await this.parcelService.remove({ where: { id: +id } });
   }
 }

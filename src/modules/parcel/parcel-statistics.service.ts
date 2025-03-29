@@ -12,8 +12,8 @@ export class ParcelStatisticsService {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getStatisticsFromServer(phone: string) {
-    const phoneFormed = phone.replace('+88', '');
-    if (phoneFormed.length !== 11) {
+    const phoneNumber = phone.replace('+88', '');
+    if (phoneNumber.length !== 11) {
       throw new BadRequestException('Invalid phone number!');
     }
     if (!envConfig.courierUrl || !envConfig.courierKey) {
@@ -21,20 +21,45 @@ export class ParcelStatisticsService {
         'Please contact with authority, there is an issue!',
       );
     }
-    const res = await fetch(envConfig.courierUrl + '?phone=' + phoneFormed, {
+    const res = await fetch(envConfig.courierUrl + '?phone=' + phoneNumber, {
       headers: {
         authorization: envConfig.courierKey,
       },
     });
     const data = await res.json();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return data;
+    return { data, phoneNumber };
   }
 
-  async create(createParcelDto: CreateParcelStatisticsDto) {
-    const result = await this.prisma.parcel_statistics.create({
-      data: createParcelDto,
+  async upsert(createParcelDto: CreateParcelStatisticsDto) {
+    const isExist = await this.findUnique({
+      where: {
+        phone_number_seller_id: {
+          phone_number: createParcelDto.phone_number,
+          seller_id: createParcelDto.seller_id,
+        },
+      },
     });
+    let result;
+    if (isExist) {
+      result = await this.update({
+        where: {
+          phone_number_seller_id: {
+            phone_number: createParcelDto.phone_number,
+            seller_id: createParcelDto.seller_id,
+          },
+        },
+        data: {
+          request_no: {
+            increment: 1,
+          },
+        },
+      });
+    } else {
+      result = await this.prisma.parcel_statistics.create({
+        data: createParcelDto,
+      });
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
   }
 
