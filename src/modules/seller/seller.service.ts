@@ -243,6 +243,7 @@ export class SellerService {
           seller_id: id,
         },
       });
+      await trx.parcel_statistics.deleteMany({ where: { seller_id: id } });
 
       return await trx.seller.delete({ where: { id } });
     });
@@ -257,10 +258,15 @@ export class SellerService {
       const sellers = await trx.seller.findMany(query);
 
       for (const seller of sellers) {
+        // delete associated session
         await trx.sellerSession.deleteMany({
           where: { seller_id: seller.id },
         });
-
+        // delete associated parcel history
+        await trx.parcel_statistics.deleteMany({
+          where: { seller_id: seller.id },
+        });
+        // delete profile photo
         if (seller.profile_photo) {
           await this.cloudflareService.deleteFile(seller.profile_photo);
         }
